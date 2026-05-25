@@ -1,6 +1,6 @@
 # Sistema Predictivo de Rendimiento Académico - Saber Pro (UAO)
 
-Este repositorio contiene el laboratorio de desarrollo basado en **MLOps (Machine Learning Operations)** para el modelo predictivo de factores determinantes en las pruebas Saber Pro de los estudiantes de la Universidad Autónoma de Occidente (UAO).
+Este repositorio contiene el laboratorio de desarrollo basado en **MLOps (Machine Learning Operations)** para el modelo predictivo de factores determinantes en las pruebas Saber Pro de los estudiantes de la Universidad XXX.
 
 ---
 
