@@ -216,3 +216,26 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+marimo/_static/
+marimo/_lsp/
+__marimo__/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# =========================================================
+# 🎓 CONTROL DE DATOS Y ENTREGABLES DE MLOPS - VALENTINA
+# =========================================================
+# 1. Ignorar los datos masivos originales (Evita que GitHub se bloquee por peso)
+data/raw/
+
+# 2. OBLIGAR a GitHub a guardar tus modelos, reportes y métricas generadas
+!data/processed/
+!data/monitoring/
+!models/
+!reports/
+
+# 3. Ignorar carpetas locales temporales de MLflow que no se necesitan en la nube
+.mlflow/
