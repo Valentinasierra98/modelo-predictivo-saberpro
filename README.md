@@ -41,7 +41,7 @@ Siga estos pasos desde su terminal para clonar, instalar y desplegar el entorno 
 
 ### 1. Clonar el repositorio
 ```bash
-git clone [https://github.com/Valentinasierra98/modelo-predictivo-saberpro.git](https://github.com/Valentinasierra98/modelo-predictivo-saberpro.git)
+git clone (https://github.com/Valentinasierra98/modelo-predictivo-saberpro.git)
 cd modelo-predictivo-saberpro
 
 ### 2. Activar el Entorno Virtual (Asegurar aislamiento)
