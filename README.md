@@ -50,6 +50,7 @@ Para garantizar que todas las librerías se ejecuten en un entorno aislado y no 
 * **En Windows (PowerShell):**
   ```powershell
   python -m venv .venv
+  .venv\Scripts\Activate.ps1
 
 
 ### 3. Instalar las dependencias del sistema
