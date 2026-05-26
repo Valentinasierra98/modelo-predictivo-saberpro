@@ -43,3 +43,21 @@ Siga estos pasos desde su terminal para clonar, instalar y desplegar el entorno 
 ```bash
 git clone [https://github.com/Valentinasierra98/modelo-predictivo-saberpro.git](https://github.com/Valentinasierra98/modelo-predictivo-saberpro.git)
 cd modelo-predictivo-saberpro
+
+### 2. Activar el Entorno Virtual (Asegurar aislamiento)
+Para garantizar que todas las librerías se ejecuten en un entorno aislado y no generen conflictos con otras instalaciones de su computadora, active el entorno virtual ejecutando según su sistema operativo:
+
+* **En Windows (PowerShell):**
+  ```powershell
+  .venv\Scripts\Activate.ps1
+
+
+### 3. Instalar las dependencias del sistema
+Una vez activado el entorno virtual, instale todo el ecosistema de librerías requeridas para el proyecto (Scikit-Learn, MLflow, Streamlit, Pandas, etc.) corriendo el siguiente comando:
+
+```bash
+pip install -r requirements.txt
+
+### 4. Lanzar la Plataforma Integrada
+
+streamlit run App/app.py
