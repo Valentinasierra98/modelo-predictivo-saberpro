@@ -4,6 +4,81 @@ import numpy as np
 import joblib
 import os
 from datetime import datetime
+from src.config import BaseConfig
+from src.data import DataProcessor
+from src.Models.train import TrainModels
+import subprocess
+import time
+import webbrowser
+import sys
+import os
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(BASE_DIR)
+
+# ==========================================
+#INICIALIZACIÓN DE PIPELINE (ACP + ENTRENAMIENTO) SI LOS MODELOS NO EXISTEN
+# ==========================================
+
+FLAG_PATH = "models/.trained.flag"
+
+def ejecutar_pipeline_con_progreso():
+    st.title("Cargando Predictor Saber Pro")
+
+    barra = st.progress(0)
+    texto = st.empty()
+
+    texto.text("Cargando configuración...")
+    BaseConfig()
+    barra.progress(25)
+
+    texto.text("Ejecutando ACP...")
+    DataProcessor.ejecutar_acp_simple()
+    barra.progress(60)
+
+    texto.text("Entrenando modelos...")
+    TrainModels.entrenar_modelos()
+    barra.progress(100)
+
+    texto.text("Listo")
+    time.sleep(0.5)
+
+    texto.empty()
+    barra.empty()
+
+# SOLO UNA VEZ
+if not os.path.exists(FLAG_PATH):
+    ejecutar_pipeline_con_progreso()
+
+    os.makedirs("models", exist_ok=True)
+    with open(FLAG_PATH, "w") as f:
+        f.write("ok")
+
+
+
+# ==========================================
+#  INICIALIZACIÓN DE MLflow (UI LOCAL EN PUERTO 5000)
+# ==========================================
+
+def iniciar_mlflow():
+    print("Iniciando MLflow UI...")
+
+    subprocess.Popen(
+        ["mlflow", "ui", "--port", "5000"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
+
+    time.sleep(3)  # darle tiempo a que levante el servidor
+
+def abrir_mlflow():
+    webbrowser.open("http://127.0.0.1:5000")
+
+if not st.session_state.get("mlflow_started", False):
+    iniciar_mlflow()
+    abrir_mlflow()
+    st.session_state.mlflow_started = True
+
 
 # ==========================================
 #  CONFIGURACIÓN DE RUTAS ROBUSTAS (RAÍZ DEL PROYECTO)
