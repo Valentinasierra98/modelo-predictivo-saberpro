@@ -1,0 +1,23 @@
+artifact_path: file:///D:/Users/vasierrac/Saber-pro-predictor/mlruns/1/models/m-1a183a3c4f3041d6839cb36f58c221bd/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.10.4
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.2
+    skops_trusted_types: null
+mlflow_version: 3.12.0
+model_id: m-1a183a3c4f3041d6839cb36f58c221bd
+model_size_bytes: 2841754
+model_uuid: m-1a183a3c4f3041d6839cb36f58c221bd
+prompts: null
+run_id: 64f70ffa218e4901bb89587c82e0bb9e
+utc_time_created: '2026-05-26 16:42:51.843596'

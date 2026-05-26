@@ -1,6 +1,6 @@
-# Sistema Predictivo de Rendimiento Académico - Saber Pro (UAO)
+# Sistema Predictivo de Rendimiento Académico - Saber Pro
 
-Este repositorio contiene la implementación de una arquitectura basada en **MLOps (Machine Learning Operations)** para el modelamiento predictivo de factores sociodemográficos y académicos determinantes en las pruebas Saber Pro de la Universidad Autónoma de Occidente (UAO).
+Este repositorio contiene la implementación de una arquitectura basada en **MLOps (Machine Learning Operations)** para el modelamiento predictivo de factores sociodemográficos y académicos determinantes en las pruebas Saber Pro.
 
 El sistema reduce un espacio dimensional complejo mediante Análisis de Componentes Principales (ACP) y entrena un ecosistema multi-estimador optimizado para predecir de forma independiente las múltiples competencias núcleo del examen.
 
