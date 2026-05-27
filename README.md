@@ -22,8 +22,8 @@ El proyecto sigue una estructura modular y desacoplada para garantizar el ciclo 
 * **`src/`**: Núcleo lógico e ingeniería de software del proyecto.
     * `config.py`: Centralización de variables globales, nombres de competencias y configuraciones del sistema.
     * `data.py`: Pipeline automatizado de extracción, limpieza y procesamiento estadístico (ACP).
+    * `pipeline.py`: Orquestación del pipeline completo (ACP + entrenamiento).
     * `Models/train.py`: Pipeline modular de entrenamiento en cascada y tracking de experimentos.
-* **`mlflow.db`**: Base de datos relacional local utilizada por el servidor de MLflow para el Gobierno de Modelos (Model Registry) y trazabilidad de versiones.
 
 ---
 
@@ -37,12 +37,13 @@ Para facilitar el despliegue, la aplicación (`App/app.py`) cuenta con un pipeli
 
 ##  Guía de Replicabilidad Local
 
-Siga estos pasos desde su terminal para clonar, instalar y desplegar el entorno de desarrollo en cualquier computadora:
+Siga estos pasos desde su terminal para clonar, instalar y desplegar el entorno de desarrollo en cualquier computadora (requiere Python 3.8+):
 
 ### 1. Clonar el repositorio
 ```bash
-git clone (https://github.com/Valentinasierra98/modelo-predictivo-saberpro.git)
+git clone https://github.com/Valentinasierra98/modelo-predictivo-saberpro.git
 cd modelo-predictivo-saberpro
+```
 
 ### 2. Crear el Entorno Virtual (Asegurar aislamiento)
 Para garantizar que todas las librerías se ejecuten en un entorno aislado y no generen conflictos con otras instalaciones de su computadora, cree el entorno virtual ejecutando según su sistema operativo:
@@ -51,14 +52,17 @@ Para garantizar que todas las librerías se ejecuten en un entorno aislado y no 
   ```powershell
   python -m venv .venv
   .venv\Scripts\Activate.ps1
-
+  ```
 
 ### 3. Instalar las dependencias del sistema
 Una vez activado el entorno virtual, instale todo el ecosistema de librerías requeridas para el proyecto (Scikit-Learn, MLflow, Streamlit, Pandas, etc.) corriendo el siguiente comando:
 
 ```bash
 pip install -r requirements.txt
+```
 
 ### 4. Lanzar la Plataforma Integrada
 
+```bash
 streamlit run App/app.py
+```

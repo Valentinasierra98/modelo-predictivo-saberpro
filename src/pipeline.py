@@ -4,7 +4,7 @@ from src.data import DataProcessor
 from src.Models.train import TrainModels
 
 def run_pipeline():
-    modelo_path = "models/modelo_PUNT_GLOBAL.pkl"
+    modelo_path = os.path.join(BaseConfig.BASE_DIR, "models", "modelo_PUNT_GLOBAL.pkl")
 
     if os.path.exists(modelo_path):
         print("Pipeline ya existe, saltando entrenamiento")

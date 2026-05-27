@@ -1,26 +1,25 @@
+import sys
+import os
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, BASE_DIR)
+
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
-import os
 from datetime import datetime
-from src.config import BaseConfig
+from src.config import BaseConfig as config
 from src.data import DataProcessor
 from src.Models.train import TrainModels
 import subprocess
 import time
 import webbrowser
-import sys
-import os
-
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.append(BASE_DIR)
 
 # ==========================================
 #INICIALIZACIÓN DE PIPELINE (ACP + ENTRENAMIENTO) SI LOS MODELOS NO EXISTEN
 # ==========================================
 
-FLAG_PATH = "models/.trained.flag"
+FLAG_PATH = os.path.join(BASE_DIR, "models", ".trained.flag")
 
 def ejecutar_pipeline_con_progreso():
     st.title("Cargando Predictor Saber Pro")
@@ -29,7 +28,7 @@ def ejecutar_pipeline_con_progreso():
     texto = st.empty()
 
     texto.text("Cargando configuración...")
-    BaseConfig()
+    config()
     barra.progress(25)
 
     texto.text("Ejecutando ACP...")
@@ -50,7 +49,7 @@ def ejecutar_pipeline_con_progreso():
 if not os.path.exists(FLAG_PATH):
     ejecutar_pipeline_con_progreso()
 
-    os.makedirs("models", exist_ok=True)
+    os.makedirs(os.path.join(BASE_DIR, "models"), exist_ok=True)
     with open(FLAG_PATH, "w") as f:
         f.write("ok")
 
@@ -83,30 +82,24 @@ if not st.session_state.get("mlflow_started", False):
 # ==========================================
 #  CONFIGURACIÓN DE RUTAS ROBUSTAS (RAÍZ DEL PROYECTO)
 # ==========================================
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CARPETA_MODELOS = os.path.join(BASE_DIR, "models")  # Apunta a la carpeta unificada 'models'
 RUTA_MONITOREO = os.path.join(BASE_DIR, "data", "monitoring", "log_inferencia_produccion.csv")
 
 # ==========================================
 #  FUNCIÓN DE PERSISTENCIA (DATAOPS / MONITORING)
 # ==========================================
-def registrar_prediccion_monitoreo(c1, c2, c3, pred_global, pred_rc, pred_lc, pred_cc, pred_ing, pred_ce):
-    """
-    Guarda en caliente los datos calculados del ACP y las predicciones 
-    generadas dentro de la carpeta data/monitoring.
-    """
-    registro = {
-        "FECHA_LOG": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "ACP_COMPONENTE_1": round(c1, 4),
-        "ACP_COMPONENTE_2": round(c2, 4),
-        "ACP_COMPONENTE_3": round(c3, 4),
+def registrar_prediccion_monitoreo(componentes, pred_global, pred_rc, pred_lc, pred_cc, pred_ing, pred_ce):
+    registro = {"FECHA_LOG": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    for i, val in enumerate(componentes):
+        registro[f"ACP_COMPONENTE_{i+1}"] = round(val, 4)
+    registro.update({
         "PRED_PUNT_GLOBAL": round(pred_global, 1),
         "PRED_RAZ_CUANT": round(pred_rc, 1),
         "PRED_LECT_CRIT": round(pred_lc, 1),
         "PRED_COMP_CIUD": round(pred_cc, 1),
         "PRED_INGLES": round(pred_ing, 1),
         "PRED_COM_ESC": round(pred_ce, 1)
-    }
+    })
     
     df_registro = pd.DataFrame([registro])
     
@@ -233,21 +226,19 @@ rows = [st.columns(3), st.columns(3)]
 claves_materias = list(metricas_fijas.keys())
 
 if modelos_cargados is not None:
-    # Coordenadas calculadas sintéticamente basadas en los pesos del ACP
+    n = config.PCA_N_COMPONENTS
     c1 = (icfes * 0.015) + (promedio_u * 0.4) + (horas_estudio * 0.02) - 2.1
     c2 = (estrato * -0.3) + (ingresos * -0.2) + (promedio_u * 0.1) + 0.5
     c3 = (horas_estudio * 0.1) - (icfes * 0.002)
+    componentes = [c1, c2, c3] + [0.0] * (n - 3)
     
-    datos_entrada_acp = [[c1, c2, c3]]
+    datos_entrada_acp = [componentes]
     
-    # Inicializar variables temporales para el registro de monitoreo
     pred_global = pred_rc = pred_lc = pred_cc = pred_ing = pred_ce = 0.0
     
-    # Iterar sobre las 6 materias para predecir de forma independiente
     for i, materia_key in enumerate(claves_materias):
         resultado_prediccion = modelos_cargados[materia_key].predict(datos_entrada_acp)[0]
         
-        # Validación de límites para que los puntajes no se salgan del estándar (0 a 300 o 0 a 500)
         if materia_key == "PUNT_GLOBAL":
             resultado_prediccion = min(max(resultado_prediccion, 0), 500)
             pred_global = resultado_prediccion
@@ -273,13 +264,12 @@ if modelos_cargados is not None:
                 </div>
             """, unsafe_allow_html=True)
             
-    # Botón profesional para accionar el log en caliente
     if st.button(" Registrar consulta en bitácora de producción"):
-        registrar_prediccion_monitoreo(c1, c2, c3, pred_global, pred_rc, pred_lc, pred_cc, pred_ing, pred_ce)
+        registrar_prediccion_monitoreo(componentes, pred_global, pred_rc, pred_lc, pred_cc, pred_ing, pred_ce)
         st.success(f" Simulación registrada de manera exitosa en: {os.path.relpath(RUTA_MONITOREO, BASE_DIR)}")
 
 else:
     st.warning(f" Esperando a que el backend verifique los 6 archivos '.pkl' en la carpeta '{CARPETA_MODELOS}' para activar la inferencia.")
 
 st.markdown("---")
-st.success(" MLOps e Interfaz Sincronizados: El backend ejecuta inferencia directa mapeando las variables socioeconómicas a los 3 Componentes Principales en tiempo real.")
+st.success(" MLOps e Interfaz Sincronizados: El backend ejecuta inferencia directa mapeando las variables socioeconómicas a los 10 Componentes Principales en tiempo real.")

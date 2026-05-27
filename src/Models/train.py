@@ -11,32 +11,22 @@ import joblib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, r2_score
 from src.config import BaseConfig as config    
 
 
 class TrainModels:
 
-    # Encontrar la raíz real del proyecto y agregarla al sistema de rutas de Python
-    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    sys.path.append(BASE_DIR)
-
-    # Ahora importamos config especificando que está dentro de la carpeta src
-    try:
-        from src.config import BaseConfig as config        
-    except ModuleNotFoundError:
-        # Si por alguna razón falla el empaquetado, intenta buscarlo de forma directa
-        sys.path.append(os.path.join(BASE_DIR, "src"))
-        import config
-
     @staticmethod
     def generar_reportes_y_graficos(target, y_test, preds, modelo):
         nombre_limpio = target.replace(" ", "_").upper()
+        figures_dir = os.path.join(config.BASE_DIR, "reports", "figures")
+        os.makedirs(figures_dir, exist_ok=True)
         
         # 1. Gráfico de Importancia de Variables (Guardar en reports/figures/)
         plt.figure(figsize=(8, 5))
         importances = modelo.feature_importances_
-        features = ['COMPONENTE_1', 'COMPONENTE_2', 'COMPONENTE_3']
+        features = [f'COMPONENTE_{i+1}' for i in range(config.PCA_N_COMPONENTS)]
         indices = np.argsort(importances)
         
         plt.title(f"Importancia de Características - {target}", fontsize=12, fontweight='bold')
@@ -45,7 +35,7 @@ class TrainModels:
         plt.xlabel('Importancia Relativa')
         plt.tight_layout()
         
-        ruta_grafico = f"reports/figures/importancia_{nombre_limpio}.png"
+        ruta_grafico = os.path.join(figures_dir, f"importancia_{nombre_limpio}.png")
         plt.savefig(ruta_grafico, dpi=300)
         plt.close()
         
@@ -58,16 +48,16 @@ class TrainModels:
         plt.title(f"Dispersión: {target}")
         plt.tight_layout()
         
-        ruta_dispersion = f"reports/figures/dispersion_{nombre_limpio}.png"
+        ruta_dispersion = os.path.join(figures_dir, f"dispersion_{nombre_limpio}.png")
         plt.savefig(ruta_dispersion, dpi=300)
         plt.close()
         
         return ruta_grafico, ruta_dispersion
 
+    @staticmethod
     def entrenar_modelos():
         print("--- Leyendo dataset procesado tras el ACP... ---")
-        # Ruta adaptada a tu estructura local de datos
-        ruta_data = "data/processed/data_limpia.csv"
+        ruta_data = config.PROCESSED_DATA_PATH
         if not os.path.exists(ruta_data):
             print(f"Error: No se encuentra el archivo {ruta_data}. Corre primero src/data.py")
             return
@@ -75,10 +65,12 @@ class TrainModels:
         df = pd.read_csv(ruta_data)
         mlflow.set_experiment("Prediccion_Saber_Pro_UAO")
         
-        # Crear carpetas correctas en la raíz
-        os.makedirs("models", exist_ok=True)
-        os.makedirs("reports/figures", exist_ok=True)
-        os.makedirs("reports/metrics", exist_ok=True)
+        models_dir = os.path.join(config.BASE_DIR, "models")
+        figures_dir = os.path.join(config.BASE_DIR, "reports", "figures")
+        metrics_dir = os.path.join(config.BASE_DIR, "reports", "metrics")
+        os.makedirs(models_dir, exist_ok=True)
+        os.makedirs(figures_dir, exist_ok=True)
+        os.makedirs(metrics_dir, exist_ok=True)
         
         resumen_metrics = []
 
@@ -87,22 +79,27 @@ class TrainModels:
             df_clean = df.dropna(subset=[target]).copy()
             if df_clean.empty: continue
                 
-            X = df_clean[['COMPONENTE_1', 'COMPONENTE_2', 'COMPONENTE_3']]
+            feature_cols = [f'COMPONENTE_{i+1}' for i in range(config.PCA_N_COMPONENTS)]
+            X = df_clean[feature_cols]
             y = df_clean[target]
             
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
             nombre_limpio = target.replace(" ", "_").upper()
             
             with mlflow.start_run(run_name=f"RF_{nombre_limpio}"):
-                modelo = RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42)
+                modelo = RandomForestRegressor(
+                    n_estimators=config.RF_N_ESTIMATORS,
+                    max_depth=config.RF_MAX_DEPTH,
+                    random_state=config.RANDOM_STATE
+                )
                 modelo.fit(X_train, y_train)
                 preds = modelo.predict(X_test)
                 
                 r2 = r2_score(y_test, preds)
                 mae = mean_absolute_error(y_test, preds)
                 
-                mlflow.log_param("n_estimators", 100)
-                mlflow.log_param("max_depth", 8)
+                mlflow.log_param("n_estimators", config.RF_N_ESTIMATORS)
+                mlflow.log_param("max_depth", config.RF_MAX_DEPTH)
                 mlflow.log_metric("r2_score", r2)
                 mlflow.log_metric("mae", mae)
                 
@@ -112,14 +109,13 @@ class TrainModels:
                 
                 mlflow.sklearn.log_model(sk_model=modelo, artifact_path="modelo", registered_model_name=f"RF_{nombre_limpio}")
                 
-                # Guardar el binario en la carpeta models/ de la raíz para la App
-                joblib.dump(modelo, f"models/modelo_{nombre_limpio}.pkl")
+                joblib.dump(modelo, os.path.join(models_dir, f"modelo_{nombre_limpio}.pkl"))
                 
                 resumen_metrics.append({"Competencia": target, "R2_Score": round(r2, 4), "MAE": round(mae, 2)})
 
         df_reporte_final = pd.DataFrame(resumen_metrics)
-        df_reporte_final.to_csv("reports/metrics/metricas_consolidadas_saber_pro.csv", index=False)
+        df_reporte_final.to_csv(os.path.join(metrics_dir, "metricas_consolidadas_saber_pro.csv"), index=False)
         print("\n--- [ÉXITO] Proceso Finalizado. Carpetas 'models' y 'reports' actualizadas ---")
 
-    if __name__ == "__main__":
-        entrenar_modelos()
+if __name__ == "__main__":
+    TrainModels.entrenar_modelos()

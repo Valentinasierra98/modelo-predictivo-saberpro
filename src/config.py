@@ -39,4 +39,13 @@ class BaseConfig:
         "MOD_COMUNI_ESCRITA_PUNT"      # Módulo de Comunicación Escrita
     ]
 
+    # ==============================================================================
+    # HIPERPARÁMETROS DE ENTRENAMIENTO
+    # ==============================================================================
+
+    RF_N_ESTIMATORS = 100
+    RF_MAX_DEPTH = 8
+    RANDOM_STATE = 42
+    PCA_N_COMPONENTS = 10
+
     print("Rutas y variables objetivo configuradas con éxito.")
