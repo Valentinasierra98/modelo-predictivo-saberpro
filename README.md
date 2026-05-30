@@ -53,6 +53,11 @@ Para garantizar que todas las librerías se ejecuten en un entorno aislado y no 
   python -m venv .venv
   .venv\Scripts\Activate.ps1
   ```
+  **Si al ejecutar ".venv\Scripts\Activate.ps1" sale error por politica de ejecucion:**
+  ```powershell
+  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+  .venv\Scripts\Activate.ps1
+  ```
 
 ### 3. Instalar las dependencias del sistema
 Una vez activado el entorno virtual, instale todo el ecosistema de librerías requeridas para el proyecto (Scikit-Learn, MLflow, Streamlit, Pandas, etc.) corriendo el siguiente comando:
